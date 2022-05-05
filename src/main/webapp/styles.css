@@ -1,0 +1,33 @@
+@charset "ISO-8859-1";
+
+@font-face {
+	font-family: "bitstream";
+	src: url("bitstream_vera_sans/Vera.ttf");
+}
+
+.bitstream {
+	font-family: "bitstream";
+	}
+
+.header {
+	display: flex;
+	align-items: center;
+}
+
+.header_left {
+	display: flex;
+/* 	align-self: flex-start; */
+	justify-content: flex-start;
+}
+
+.header_right {
+	display: flex;
+/* 	align-self: flex-start; */
+	justify-content: flex-end;
+}
+.header_date_time {
+	display: flex;
+/* 	align-self: flex-start; */
+	flex-direction: column;
+	justify-content: center;
+}
