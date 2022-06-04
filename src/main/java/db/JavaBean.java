@@ -1,6 +1,10 @@
 package db;
 
+import java.io.Console;
 import java.sql.*;
+import java.util.ArrayList;
+
+import javax.xml.transform.Templates;
 
 import com.mysql.cj.xdevapi.Schema;
 
@@ -148,6 +152,23 @@ public class JavaBean {
 		}
 	} // end of addLuminosity()
 	
+	public ResultSet listArduinos() throws Exception {
+		ResultSet rs = null;
+		try {
+			String queryString = ("select * from `arduinos`;");
+			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+			
+		} catch (SQLException sqle) {
+			error = "SQLException: Interogarea nu a fost posibila.";
+			throw new SQLException(error);
+		} catch (Exception e) {
+			error = "A aparut o exceptie in timp ce se extrageau datele.";
+			throw new Exception(error);
+		}
+		return rs;
+	} // listArduinos()
+	
 	public ResultSet listTable(String table) throws SQLException, Exception {
 		ResultSet rs = null;
 		try {
@@ -179,6 +200,80 @@ public class JavaBean {
 		}
 		return rs;
 	} // listValues()
+	
+	public ResultSet listLastValue() throws Exception {
+		ResultSet rs = null;
+		try {
+			String queryString = ("SELECT * FROM `values` ORDER BY idValue DESC LIMIT 2;");
+			// last two values are needed because there are two sensors per arduino:
+			// tempereature and light
+			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+		} catch (SQLException sqle) {
+			error = "SQLException: Interogarea nu a fost posibila.";
+			throw new SQLException(error);
+		} catch (Exception e) {
+			error = "A aparut o exceptie in timp ce se extrageau datele.";
+			throw new Exception(error);
+		}
+		return rs;
+	} // listLastValue()
+	
+	public String getArduinoLocation(int idArduino) throws Exception {
+		ResultSet rs = null;
+		String location = "";
+		try {
+			String queryString = ("select * from arduinos where idArduino = " + idArduino + ";");
+			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+			rs.next();
+			location = rs.getString("city") + ", " + rs.getString("country");
+			rs.close();
+		} catch (SQLException sqle) {
+			error = "SQLException: Interogarea nu a fost posibila.";
+			throw new SQLException(error);
+		} catch (Exception e) {
+			error = "A aparut o exceptie in timp ce se extrageau datele.";
+			throw new Exception(error);
+		}
+		return location;
+	} // getArduinoLocation()
+	
+	public ArrayList<Measurement> getMeasurementsFromArduino(int idArduino) throws Exception {
+		ResultSet rs = null;
+		ArrayList<Measurement> measurements = new ArrayList<>();
+		try {
+			String queryString = ("SELECT s.idSensor, v.temperature, v.luminosity, v.time FROM arduinos a INNER JOIN sensors s ON a.idArduino = s.idArduino INNER JOIN `values` v ON s.idSensor = v.idSensor where a.idArduino = " + idArduino + ";");
+			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+			while(rs.next()) {
+				int t = rs.getInt("temperature");
+				int l = rs.getInt("luminosity");
+				String time = rs.getString("time");
+				int mLast = measurements.size() - 1;
+				if(mLast >= 0 && measurements.get(mLast).time.equals(time)) {
+					measurements.get(mLast).temperature = t != 0 ? t : measurements.get(mLast).temperature;
+					measurements.get(mLast).light = l != 0 ? l : measurements.get(mLast).light;
+
+				} else {
+					measurements.add(
+						new Measurement(t, l, time)
+					);
+				}
+			}
+			rs.close();
+		} catch (SQLException sqle) {
+			error = "SQLException: Interogarea nu a fost posibila.";
+			throw new SQLException(error);
+		} catch (Exception e) {
+			error = "A aparut o exceptie in timp ce se extrageau datele.";
+			throw new Exception(error);
+		}
+//		for(Measurement m : measurements) {
+//			System.out.println(m.time + ", " + m.temperature + ", " + m.light);
+//		}
+		return measurements;
+	}
 
 	public void deleteFromTable(String[] primaryKeys, String table, String id) throws SQLException, Exception {
 		if (con != null) {
@@ -299,4 +394,19 @@ public class JavaBean {
 		}
 		return rs;
 	} // end of returnValueById()
+	
+	public class Measurement{
+		public int temperature;
+		public int light;
+		public String time;
+		
+		public Measurement() {
+		}
+		
+		public Measurement(int temp, int light, String time) {
+			this.temperature = temp;
+			this.light = light;
+			this.time = time;
+		}
+	}
 }
