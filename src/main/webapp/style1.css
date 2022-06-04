@@ -1,0 +1,185 @@
+/* Import Google Font - Roboto Mono */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto Mono', sans-serif;
+}
+
+html {
+  width: 100%;
+}
+
+body{
+  display: flex; /*defineste un flex container*/
+  align-items: center; /*centreaza elementele pe axa y*/
+  align-content: space-between;/*spatiaza in mod egal elementele pe axa y*/
+  justify-content: center;/*centreaza elementele pe axa x*/
+  min-height: 100vh;
+  background: #6CAEFF;
+  flex-direction: column;/*defineste directia elementelor ca fiind top to bottom*/
+  position: relative;
+  
+}
+
+header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 10%;
+  background-color: rgb(255, 255, 255);
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.navbar ul{
+  list-style: none;
+  display: flex;
+}
+
+.navbar li{
+  padding: 20px;
+  font-size: 23px;
+}
+
+.navbar a:link{
+  color: #189aa0;
+}
+
+.navbar a:visited{
+  color: #189aa0;
+}
+
+.navbar a:link{
+  text-decoration: none;
+}
+
+.navbar a:visited{
+  text-decoration: none;
+}
+
+a:hover{
+  text-shadow: 1.4px 1px 3px rgb(185, 185, 185);
+}
+
+.wrapper{
+  margin-top: 100px;
+  width: 400px;
+  background: #fff;
+  border-radius: 60px;
+  box-shadow: 4px 4px 8px rgba(66, 66, 68, 0.3);
+}
+
+
+.wrapper .input-part{
+  margin: 5px 65px;
+}
+.wrapper.active .input-part{
+  display: none; 
+  /*cand dam enter dupa ce am scris orasul
+   si ne arata vremea, dispare inputul de cautare
+   a orasului*/
+}
+.input-part .info-txt{
+  display: none;
+  font-size: 18px;
+  text-align: center;
+  border-radius: 7px;
+ 
+}
+.input-part .info-txt.error{
+  color: #721c24;
+  display: block;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+.input-part .info-txt.pending{
+  color: #0c5460;
+  display: block;
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+}
+.input-part input{
+  width: 100%;
+  height: 55px;
+  border: none;
+  outline: none;
+  font-size: 20px;
+  
+}
+.input-part input{
+  text-align: center;
+  
+}
+
+.input-part input::placeholder{
+  color: #bfbfbf;
+}
+
+.wrapper .weather-part{
+  display: none;
+  /*atata timp cat bara de cautare este activa,
+  display none = nu afiseza weather part*/
+  margin: 20px 0 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.wrapper.active .weather-part{
+  display: flex;
+}
+.weather-part img{
+  max-width: 135px;
+}
+.weather-part .temp{
+  display: flex;
+  font-size: 60px;
+}
+.weather-part .temp .numb{
+  font-weight: 600;
+}
+
+.weather-part .weather{
+  font-size: 21px;
+  
+  margin: -5px 20px 15px;
+}
+.weather-part .location{
+  display: flex;
+  font-size: 19px;
+  padding: 0 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  align-items: flex-start;
+}
+.location i{
+  font-size: 22px;
+}
+.weather-part .bottom-details{
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  border-top: 1px solid rgb(163, 163, 163);
+}
+.bottom-details .row{
+  display: flex;
+  width: 100%;
+  padding: 15px 0;
+  margin-left: 32%;
+  
+}
+.row i{
+  font-size: 40px;
+  color:#189aa0;
+}
+
+.details .speed-dir, .humidity span, .clouds span{
+  font-size: 18px;
+  font-weight: 700; /*bold*/
+}
+
+.row .details p{
+  font-size: 15px;
+}
