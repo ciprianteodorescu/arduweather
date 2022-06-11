@@ -1,3 +1,4 @@
+<%@page import="db.JavaBean.Measurement"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@ page language="java" import="java.lang.*,java.math.*,db.*,java.sql.*, java.io.*, java.util.*"%>
 <!DOCTYPE html>
@@ -80,35 +81,31 @@
           </ul>
     </header>
 
-	<%
-	rs = jb.listLastValue();
-	int temperature = 0, light = 0;
-	while(rs.next()) {
-		int aux1 = rs.getInt("temperature");
-		int aux2 = rs.getInt("luminosity");
-		temperature = aux1 != 0 ? aux1 : temperature;
-		light = aux2 != 0 ? aux2 : light;
-	}
-	rs.close();
-	%>
+	<span><%=location%></span>
 	<div class="daily-wrapper">
+	<%
+	System.out.println(idArduino);
+	List<Measurement> measurements = jb.listAverageDaysValues(idArduino);
+	//List<Integer> tempList = new ArrayList<>();
+	//List<Integer> lightList = new ArrayList<>();
 	
-	    <div class="wrapper active">      
+	for(Measurement m : measurements) {
+	%>
+		<div class="wrapper active">      
 	      <section class="weather-part">	       
 	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
+	          <span class="numb"><%=m.temperature%></span>
 	          <sup>°</sup>C
 	        </div>
 	        <div class="location">
 	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
 	        </div>
 	        <div class="bottom-details">
 	
 	          <div class="row clouds">
 	            <i class='bx bx-sun'></i>
 	            <div class="details">
-	              <span><%=light%></span>%
+	              <span><%=m.light%></span>%
 	              <p>Light</p>
 	            </div>
 	          </div>
@@ -116,54 +113,9 @@
 	        </div>
 	      </section>
 	    </div>
-	    
-	    <div class="wrapper active">      
-	      <section class="weather-part">
-	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
-	          <sup>°</sup>C
-	        </div>
-	        <div class="location">
-	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
-	        </div>
-	        <div class="bottom-details">
-	
-	          <div class="row clouds">
-	            <i class='bx bx-sun'></i>
-	            <div class="details">
-	              <span><%=light%></span>%
-	              <p>Light</p>
-	            </div>
-	          </div>
-	
-	        </div>
-	      </section>
-	    </div>
-	    
-	    <div class="wrapper active">      
-	      <section class="weather-part">
-	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
-	          <sup>°</sup>C
-	        </div>
-	        <div class="location">
-	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
-	        </div>
-	        <div class="bottom-details">
-	
-	          <div class="row clouds">
-	            <i class='bx bx-sun'></i>
-	            <div class="details">
-	              <span><%=light%></span>%
-	              <p>Light</p>
-	            </div>
-	          </div>
-	
-	        </div>
-	      </section>
-	    </div>
+	<%
+	}
+	%>
 	    
     </div>
     
@@ -171,21 +123,29 @@
     <script>
     function showArduinos(id) {
     	console.log(id + "Content");
+    	var dropdowns = document.getElementsByClassName("dropdown-content");
+   		var i;
+		for (i = 0; i < dropdowns.length; i++) {
+      		var openDropdown = dropdowns[i];
+      		if (openDropdown.classList.contains('show')) {
+        		openDropdown.classList.remove('show');
+      		}
+   		}
     	document.getElementById(id + "Content").classList.toggle("show");
     }
     
-    window.onclick = function(event) {
-   		if (!event.target.matches('.dropbtn')) {
-  	    	var dropdowns = document.getElementsByClassName("dropdown-content");
-  	    	var i;
-  	    	for (i = 0; i < dropdowns.length; i++) {
-  	      		var openDropdown = dropdowns[i];
-  	      		if (openDropdown.classList.contains('show')) {
-  	        		openDropdown.classList.remove('show');
-  	      		}
-  	    	}
-  	  	}
-  	}
+	window.onclick = function(event) {
+	  	if (!event.target.matches('.dropbtn')) {
+	    	var dropdowns = document.getElementsByClassName("dropdown-content");
+	   		var i;
+    		for (i = 0; i < dropdowns.length; i++) {
+	      		var openDropdown = dropdowns[i];
+	      		if (openDropdown.classList.contains('show')) {
+	        		openDropdown.classList.remove('show');
+	      		}
+	   		}
+	  	}
+	}
     </script>
 
   <%
