@@ -97,9 +97,6 @@
 	          <span class="numb"><%=m.temperature%></span>
 	          <sup>°</sup>C
 	        </div>
-	        <div class="location">
-	          <i class='bx bx-map'></i>
-	        </div>
 	        <div class="bottom-details">
 	
 	          <div class="row clouds">
