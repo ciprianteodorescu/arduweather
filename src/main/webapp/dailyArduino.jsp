@@ -81,13 +81,28 @@
     </header>
 
 	<%
+	jb.listThreeDaysValues();
 	rs = jb.listLastValue();
+	List<Integer> tempList = new ArrayList<>();
+	List<Integer> lightList = new ArrayList<>();
+	
 	int temperature = 0, light = 0;
+	int i = 0;
 	while(rs.next()) {
 		int aux1 = rs.getInt("temperature");
 		int aux2 = rs.getInt("luminosity");
 		temperature = aux1 != 0 ? aux1 : temperature;
 		light = aux2 != 0 ? aux2 : light;
+		i++;
+		//System.out.println("temp: " + temperature);
+		if(i == 2) {
+			i = 0;
+			tempList.add(temperature);
+			lightList.add(light);
+			temperature = 0;
+			light = 0;
+			//System.out.println("templist: " + tempList);
+		}
 	}
 	rs.close();
 	%>
@@ -97,7 +112,7 @@
 	      <section class="weather-part">
 	        <img src ="" alt="icon">
 	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
+	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C
 	        </div>
 	        <div class="location">
@@ -122,7 +137,7 @@
 	      <section class="weather-part">
 	        <img src ="" alt="icon">
 	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
+	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C
 	        </div>
 	        <div class="location">
@@ -147,7 +162,7 @@
 	      <section class="weather-part">
 	        <img src ="" alt="icon">
 	        <div class="temp">
-	          <span class="numb"><%=temperature%></span>
+	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C
 	        </div>
 	        <div class="location">
@@ -174,21 +189,29 @@
     <script>
     function showArduinos(id) {
     	console.log(id + "Content");
+    	var dropdowns = document.getElementsByClassName("dropdown-content");
+   		var i;
+		for (i = 0; i < dropdowns.length; i++) {
+      		var openDropdown = dropdowns[i];
+      		if (openDropdown.classList.contains('show')) {
+        		openDropdown.classList.remove('show');
+      		}
+   		}
     	document.getElementById(id + "Content").classList.toggle("show");
     }
     
-    window.onclick = function(event) {
-   		if (!event.target.matches('.dropbtn')) {
-  	    	var dropdowns = document.getElementsByClassName("dropdown-content");
-  	    	var i;
-  	    	for (i = 0; i < dropdowns.length; i++) {
-  	      		var openDropdown = dropdowns[i];
-  	      		if (openDropdown.classList.contains('show')) {
-  	        		openDropdown.classList.remove('show');
-  	      		}
-  	    	}
-  	  	}
-  	}
+	window.onclick = function(event) {
+	  	if (!event.target.matches('.dropbtn')) {
+	    	var dropdowns = document.getElementsByClassName("dropdown-content");
+	   		var i;
+    		for (i = 0; i < dropdowns.length; i++) {
+	      		var openDropdown = dropdowns[i];
+	      		if (openDropdown.classList.contains('show')) {
+	        		openDropdown.classList.remove('show');
+	      		}
+	   		}
+	  	}
+	}
     </script>
 
   <%

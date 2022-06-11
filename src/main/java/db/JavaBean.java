@@ -3,6 +3,7 @@ package db;
 import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.transform.Templates;
 
@@ -218,6 +219,48 @@ public class JavaBean {
 		}
 		return rs;
 	} // listLastValue()
+	
+	public void listThreeDaysValues() throws Exception {
+		ResultSet rs = null;
+		try {
+			String queryString = ("SELECT * FROM `values` ORDER BY idValue DESC LIMIT 2;");
+			// last two values are needed because there are two sensors per arduino:
+			// tempereature and light
+			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+		} catch (SQLException sqle) {
+			error = "SQLException: Interogarea nu a fost posibila.";
+			throw new SQLException(error);
+		} catch (Exception e) {
+			error = "A aparut o exceptie in timp ce se extrageau datele.";
+			throw new Exception(error);
+		}
+		List<Integer> tempList = new ArrayList<>();
+		List<Integer> lightList = new ArrayList<>();
+		
+		int temperature = 0, light = 0;
+		int i = 0;
+		while(rs.next()) {
+			Date time = rs.getDate("time");
+			System.out.println(time.getDate());
+			int aux1 = rs.getInt("temperature");
+			int aux2 = rs.getInt("luminosity");
+			temperature = aux1 != 0 ? aux1 : temperature;
+			light = aux2 != 0 ? aux2 : light;
+			i++;
+			System.out.println("temp: " + temperature);
+			if(i == 2) {
+				i = 0;
+				tempList.add(temperature);
+				lightList.add(light);
+				temperature = 0;
+				light = 0;
+				System.out.println("templist: " + tempList);
+			}
+		}
+		rs.close();
+		//return rs;
+	} // listThreeDaysValues()
 	
 	public String getArduinoLocation(int idArduino) throws Exception {
 		ResultSet rs = null;
