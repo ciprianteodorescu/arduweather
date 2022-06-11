@@ -109,8 +109,7 @@
 	<div class="daily-wrapper">
 	
 	    <div class="wrapper active">      
-	      <section class="weather-part">
-	        <img src ="" alt="icon">
+	      <section class="weather-part">	       
 	        <div class="temp">
 	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C
@@ -135,7 +134,6 @@
 	    
 	    <div class="wrapper active">      
 	      <section class="weather-part">
-	        <img src ="" alt="icon">
 	        <div class="temp">
 	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C
@@ -160,7 +158,6 @@
 	    
 	    <div class="wrapper active">      
 	      <section class="weather-part">
-	        <img src ="" alt="icon">
 	        <div class="temp">
 	          <span class="numb"><%=tempList.get(0)%></span>
 	          <sup>°</sup>C

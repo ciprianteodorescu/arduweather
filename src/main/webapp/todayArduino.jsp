@@ -81,19 +81,31 @@
     </header>
 
 	<%
-	rs = jb.listLastValue();
-	int temperature = 0, light = 0;
-	while(rs.next()) {
-		int aux1 = rs.getInt("temperature");
-		int aux2 = rs.getInt("luminosity");
-		temperature = aux1 != 0 ? aux1 : temperature;
-		light = aux2 != 0 ? aux2 : light;
-	}
-	rs.close();
-	%>
+  rs = jb.listLastValue();
+  int temperature = 0, light = 0;
+  String icon = "";
+  while(rs.next()) {
+    int aux1 = rs.getInt("temperature");
+    int aux2 = rs.getInt("luminosity");
+    temperature = aux1 != 0 ? aux1 : temperature;
+    light = aux2 != 0 ? aux2 : light;
+    
+    Timestamp time = rs.getTimestamp("time");
+    if(time.getHours() >= 9 && time.getHours() <= 19) {
+        if(light <= 20)
+          icon = "Weather Icons\\clear.png";
+        if(light > 20 && light <= 70)
+          icon = "Weather Icons\\sun cloudy.png";
+        if(light > 70)
+          icon = "Weather Icons\\cloud.png";
+    } else 
+      icon = "Weather Icons\\moon.png";
+  }
+  rs.close();
+  %>
     <div class="wrapper active">      
       <section class="weather-part">
-        <img src ="" alt="icon">
+        <img src ="<%=icon%>" alt="icon">
         <div class="temp">
           <span class="numb"><%=temperature%></span>
           <sup>°</sup>C
