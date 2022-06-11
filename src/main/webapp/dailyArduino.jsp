@@ -1,3 +1,4 @@
+<%@page import="db.JavaBean.Measurement"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@ page language="java" import="java.lang.*,java.math.*,db.*,java.sql.*, java.io.*, java.util.*"%>
 <!DOCTYPE html>
@@ -80,50 +81,31 @@
           </ul>
     </header>
 
-	<%
-	jb.listThreeDaysValues();
-	rs = jb.listLastValue();
-	List<Integer> tempList = new ArrayList<>();
-	List<Integer> lightList = new ArrayList<>();
-	
-	int temperature = 0, light = 0;
-	int i = 0;
-	while(rs.next()) {
-		int aux1 = rs.getInt("temperature");
-		int aux2 = rs.getInt("luminosity");
-		temperature = aux1 != 0 ? aux1 : temperature;
-		light = aux2 != 0 ? aux2 : light;
-		i++;
-		//System.out.println("temp: " + temperature);
-		if(i == 2) {
-			i = 0;
-			tempList.add(temperature);
-			lightList.add(light);
-			temperature = 0;
-			light = 0;
-			//System.out.println("templist: " + tempList);
-		}
-	}
-	rs.close();
-	%>
+	<span><%=location%></span>
 	<div class="daily-wrapper">
+	<%
+	System.out.println(idArduino);
+	List<Measurement> measurements = jb.listAverageDaysValues(idArduino);
+	//List<Integer> tempList = new ArrayList<>();
+	//List<Integer> lightList = new ArrayList<>();
 	
-	    <div class="wrapper active">      
+	for(Measurement m : measurements) {
+	%>
+		<div class="wrapper active">      
 	      <section class="weather-part">	       
 	        <div class="temp">
-	          <span class="numb"><%=tempList.get(0)%></span>
+	          <span class="numb"><%=m.temperature%></span>
 	          <sup>°</sup>C
 	        </div>
 	        <div class="location">
 	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
 	        </div>
 	        <div class="bottom-details">
 	
 	          <div class="row clouds">
 	            <i class='bx bx-sun'></i>
 	            <div class="details">
-	              <span><%=light%></span>%
+	              <span><%=m.light%></span>%
 	              <p>Light</p>
 	            </div>
 	          </div>
@@ -131,54 +113,9 @@
 	        </div>
 	      </section>
 	    </div>
-	    
-	    <div class="wrapper active">      
-	      <section class="weather-part">
-	        <div class="temp">
-	          <span class="numb"><%=tempList.get(0)%></span>
-	          <sup>°</sup>C
-	        </div>
-	        <div class="location">
-	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
-	        </div>
-	        <div class="bottom-details">
-	
-	          <div class="row clouds">
-	            <i class='bx bx-sun'></i>
-	            <div class="details">
-	              <span><%=light%></span>%
-	              <p>Light</p>
-	            </div>
-	          </div>
-	
-	        </div>
-	      </section>
-	    </div>
-	    
-	    <div class="wrapper active">      
-	      <section class="weather-part">
-	        <div class="temp">
-	          <span class="numb"><%=tempList.get(0)%></span>
-	          <sup>°</sup>C
-	        </div>
-	        <div class="location">
-	          <i class='bx bx-map'></i>
-	          <span><%=location%></span>
-	        </div>
-	        <div class="bottom-details">
-	
-	          <div class="row clouds">
-	            <i class='bx bx-sun'></i>
-	            <div class="details">
-	              <span><%=light%></span>%
-	              <p>Light</p>
-	            </div>
-	          </div>
-	
-	        </div>
-	      </section>
-	    </div>
+	<%
+	}
+	%>
 	    
     </div>
     

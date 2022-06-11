@@ -9,6 +9,8 @@ import javax.xml.transform.Templates;
 
 import com.mysql.cj.xdevapi.Schema;
 
+import jakarta.security.auth.message.MessageInfo;
+
 public class JavaBean {
 
 	String error;
@@ -220,47 +222,87 @@ public class JavaBean {
 		return rs;
 	} // listLastValue()
 	
-	public void listThreeDaysValues() throws Exception {
+	public List<Measurement> listAverageDaysValues(int idArduino) throws Exception {
 		ResultSet rs = null;
+		List<Measurement> finalMeasurements = new ArrayList<>();
 		try {
-			String queryString = ("SELECT * FROM `values` ORDER BY idValue DESC LIMIT 2;");
+			String queryString = ("SELECT v.temperature, v.luminosity, v.time FROM arduinos a inner join sensors s on a.idArduino = s.idArduino inner join `values` v on s.idSensor = v.idSensor where a.idArduino = " + idArduino + " ORDER BY v.time;");
 			// last two values are needed because there are two sensors per arduino:
 			// tempereature and light
 			Statement stmt = con.createStatement();
 			rs = stmt.executeQuery(queryString);
+			
+			List<Measurement> allMeasurements = new ArrayList<>();
+			int temperature = 0, light = 0;
+			int i = 0;
+			while(rs.next()) {
+				int aux1 = rs.getInt("temperature");
+				int aux2 = rs.getInt("luminosity");
+				Timestamp timestamp = rs.getTimestamp("time");
+				temperature = aux1 != 0 ? aux1 : temperature;
+				light = aux2 != 0 ? aux2 : light;
+				i++;
+				//System.out.println("temp: " + temperature);
+				if(i == 2) {
+					allMeasurements.add(
+							new Measurement(temperature, light, timestamp.toString())
+							);
+					i = 0;
+					temperature = 0;
+					light = 0;
+				}
+			}
+			rs.close();
+			
+			int avgTemp = 0;
+			int avgLight = 0;
+			i = 0;
+			Timestamp time = Timestamp.valueOf(allMeasurements.get(0).time);
+			for(Measurement m : allMeasurements) {
+				Timestamp mTime = Timestamp.valueOf(m.time);
+				System.out.println("date: " + mTime.getDate());
+				if(Integer.valueOf(time.getDate()) == Integer.valueOf(mTime.getDate())) {
+					i++;
+					avgTemp += m.temperature;
+					avgLight += m.light;
+				} else {
+					if(i > 0) {
+						System.out.println("i: " + i);
+						avgTemp = avgTemp / i;
+						avgLight = avgLight / i;
+					}
+					i = 0;
+					finalMeasurements.add(
+							new Measurement(avgTemp, avgLight, "")
+							);
+					//System.out.print(finalMeasurements.get(finalMeasurements.size() - 1).temperature + ", ");
+					time = mTime;
+					i++;
+					avgTemp += m.temperature;
+					avgLight += m.light;
+				}
+			}
+			if(i > 0) {
+				System.out.println("i: " + i);
+				avgTemp = avgTemp / i;
+				avgLight = avgLight / i;
+			}
+			finalMeasurements.add(
+					new Measurement(avgTemp, avgLight, "")
+					);
+			System.out.println();
+			
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
 			throw new SQLException(error);
 		} catch (Exception e) {
+			System.out.println(e);
 			error = "A aparut o exceptie in timp ce se extrageau datele.";
 			throw new Exception(error);
 		}
-		List<Integer> tempList = new ArrayList<>();
-		List<Integer> lightList = new ArrayList<>();
-		
-		int temperature = 0, light = 0;
-		int i = 0;
-		while(rs.next()) {
-			Date time = rs.getDate("time");
-			System.out.println(time.getDate());
-			int aux1 = rs.getInt("temperature");
-			int aux2 = rs.getInt("luminosity");
-			temperature = aux1 != 0 ? aux1 : temperature;
-			light = aux2 != 0 ? aux2 : light;
-			i++;
-			System.out.println("temp: " + temperature);
-			if(i == 2) {
-				i = 0;
-				tempList.add(temperature);
-				lightList.add(light);
-				temperature = 0;
-				light = 0;
-				System.out.println("templist: " + tempList);
-			}
-		}
-		rs.close();
-		//return rs;
-	} // listThreeDaysValues()
+
+		return finalMeasurements;
+	} // listAverageDaysValues()
 	
 	public String getArduinoLocation(int idArduino) throws Exception {
 		ResultSet rs = null;
@@ -292,15 +334,17 @@ public class JavaBean {
 			while(rs.next()) {
 				int t = rs.getInt("temperature");
 				int l = rs.getInt("luminosity");
-				String time = rs.getString("time");
+				Timestamp time = rs.getTimestamp("time");
 				int mLast = measurements.size() - 1;
-				if(mLast >= 0 && measurements.get(mLast).time.equals(time)) {
+				if(mLast >= 0 && measurements.get(mLast).time.equals(time.toString())) {
 					measurements.get(mLast).temperature = t != 0 ? t : measurements.get(mLast).temperature;
 					measurements.get(mLast).light = l != 0 ? l : measurements.get(mLast).light;
 
 				} else {
+					String timeString = time.toString();
+					//timeString = timeString.substring(0, timeString.length() - 2);
 					measurements.add(
-						new Measurement(t, l, time)
+						new Measurement(t, l, timeString)
 					);
 				}
 			}
