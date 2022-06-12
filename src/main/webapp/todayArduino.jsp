@@ -81,7 +81,7 @@
     </header>
 
 	<%
-  rs = jb.listLastValue();
+  rs = jb.listLastValue(idArduino);
   int temperature = 0, light = 0;
   String icon = "";
   while(rs.next()) {
@@ -101,13 +101,30 @@
     } else 
       icon = "Weather Icons\\moon.png";
   }
+  System.out.println("icon: " + icon);
   rs.close();
   %>
     <div class="wrapper active">      
       <section class="weather-part">
+      	<%
+      	if(icon != "") {
+      	%>
         <img src ="<%=icon%>" alt="icon">
+        <%
+        }
+      	%>
         <div class="temp">
-          <span class="numb"><%=temperature%></span>
+	     	<%
+	     	if(icon != "") {
+	     	%>
+          	<span class="numb"><%=temperature%></span>
+          	<%
+        	} else {
+          	%>
+          	<span class="numb">_</span>
+			<%
+			}
+			%>
           <sup>°</sup>C
         </div>
         <div class="location">
@@ -119,7 +136,7 @@
           <div class="row clouds">
             <i class='bx bx-sun'></i>
             <div class="details">
-              <span><%=light%></span>%
+              <span><%=light%>%</span>
               <p>Light</p>
             </div>
           </div>

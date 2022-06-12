@@ -121,7 +121,7 @@
           <div class="row clouds">
             <i class='bx bx-cloud'></i>
             <div class="details">
-              <span>_</span>%
+              <span>_</span><b>%</b>
               <p>Clouds</p>
             </div>
           </div>

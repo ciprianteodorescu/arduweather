@@ -3,6 +3,7 @@ package db;
 import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.xml.transform.Templates;
@@ -204,10 +205,10 @@ public class JavaBean {
 		return rs;
 	} // listValues()
 	
-	public ResultSet listLastValue() throws Exception {
+	public ResultSet listLastValue(int idArduino) throws Exception {
 		ResultSet rs = null;
 		try {
-			String queryString = ("SELECT * FROM `values` ORDER BY idValue DESC LIMIT 2;");
+			String queryString = ("SELECT v.temperature, v.luminosity, v.time FROM sensors s INNER JOIN `values` v ON s.idSensor = v.idSensor WHERE s.idArduino = " + idArduino + " ORDER BY v.time DESC LIMIT 2;");
 			// last two values are needed because there are two sensors per arduino:
 			// tempereature and light
 			Statement stmt = con.createStatement();
@@ -222,7 +223,7 @@ public class JavaBean {
 		return rs;
 	} // listLastValue()
 	
-	public List<Measurement> listAverageDaysValues(int idArduino) throws Exception {
+	public List<Measurement> listAverageThreeDaysValues(int idArduino) throws Exception {
 		ResultSet rs = null;
 		List<Measurement> finalMeasurements = new ArrayList<>();
 		try {
@@ -257,41 +258,44 @@ public class JavaBean {
 			int avgTemp = 0;
 			int avgLight = 0;
 			i = 0;
-			Timestamp time = Timestamp.valueOf(allMeasurements.get(0).time);
-			for(Measurement m : allMeasurements) {
-				Timestamp mTime = Timestamp.valueOf(m.time);
-				System.out.println("date: " + mTime.getDate());
-				if(Integer.valueOf(time.getDate()) == Integer.valueOf(mTime.getDate())) {
-					i++;
-					avgTemp += m.temperature;
-					avgLight += m.light;
-				} else {
-					if(i > 0) {
-						System.out.println("i: " + i);
-						avgTemp = avgTemp / i;
-						avgLight = avgLight / i;
+			if(allMeasurements.size() > 0) {
+				Timestamp time = Timestamp.valueOf(allMeasurements.get(0).time);
+				for(Measurement m : allMeasurements) {
+					Timestamp mTime = Timestamp.valueOf(m.time);
+					System.out.println("date: " + mTime.getDate());
+					if(Integer.valueOf(time.getDate()) == Integer.valueOf(mTime.getDate())) {
+						i++;
+						avgTemp += m.temperature;
+						avgLight += m.light;
+					} else {
+						if(i > 0) {
+							System.out.println("i: " + i);
+							avgTemp = avgTemp / i;
+							avgLight = avgLight / i;
+						}
+						i = 0;
+						String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
+						finalMeasurements.add(
+								new Measurement(avgTemp, avgLight, date)
+								);
+						//System.out.print(finalMeasurements.get(finalMeasurements.size() - 1).temperature + ", ");
+						time = mTime;
+						i++;
+						avgTemp = m.temperature;
+						avgLight = m.light;
 					}
-					i = 0;
-					finalMeasurements.add(
-							new Measurement(avgTemp, avgLight, "")
-							);
-					//System.out.print(finalMeasurements.get(finalMeasurements.size() - 1).temperature + ", ");
-					time = mTime;
-					i++;
-					avgTemp += m.temperature;
-					avgLight += m.light;
 				}
+				if(i > 0) {
+					System.out.println("i: " + i);
+					avgTemp = avgTemp / i;
+					avgLight = avgLight / i;
+				}
+				String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
+				finalMeasurements.add(
+						new Measurement(avgTemp, avgLight, date)
+						);
+				System.out.println();
 			}
-			if(i > 0) {
-				System.out.println("i: " + i);
-				avgTemp = avgTemp / i;
-				avgLight = avgLight / i;
-			}
-			finalMeasurements.add(
-					new Measurement(avgTemp, avgLight, "")
-					);
-			System.out.println();
-			
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
 			throw new SQLException(error);
@@ -302,7 +306,7 @@ public class JavaBean {
 		}
 
 		return finalMeasurements;
-	} // listAverageDaysValues()
+	} // listAverageThreeDaysValues()
 	
 	public String getArduinoLocation(int idArduino) throws Exception {
 		ResultSet rs = null;
@@ -324,12 +328,36 @@ public class JavaBean {
 		return location;
 	} // getArduinoLocation()
 	
+	// for hourlyArduino.jsp
 	public ArrayList<Measurement> getMeasurementsFromArduino(int idArduino) throws Exception {
 		ResultSet rs = null;
 		ArrayList<Measurement> measurements = new ArrayList<>();
 		try {
-			String queryString = ("SELECT s.idSensor, v.temperature, v.luminosity, v.time FROM arduinos a INNER JOIN sensors s ON a.idArduino = s.idArduino INNER JOIN `values` v ON s.idSensor = v.idSensor where a.idArduino = " + idArduino + ";");
+			String queryString = ("SELECT v.time FROM arduinos a INNER JOIN sensors s ON a.idArduino = s.idArduino INNER JOIN `values` v ON s.idSensor = v.idSensor where a.idArduino = " + idArduino + " order by v.time desc limit 1;");
 			Statement stmt = con.createStatement();
+			rs = stmt.executeQuery(queryString);
+			Timestamp queryDate = null, queryNextDay = null;
+			while(rs.next()) {
+				queryDate = rs.getTimestamp("time");
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(new java.util.Date(queryDate.getTime()));
+				calendar.set(
+					calendar.get(Calendar.YEAR),
+					calendar.get(Calendar.MONTH),
+					calendar.get(Calendar.DAY_OF_MONTH),
+					0, 0, 0
+				);
+				calendar.add(Calendar.DAY_OF_MONTH, 1);
+				queryNextDay = new Timestamp(calendar.getTime().getTime());
+			}
+			rs.close();
+			if(queryDate != null && queryNextDay != null) {
+				String lastDay = queryDate.toString().substring(0, 10);
+				String nextDay = queryNextDay.toString().substring(0, 10);
+				queryString = ("SELECT s.idSensor, v.temperature, v.luminosity, v.time FROM arduinos a INNER JOIN sensors s ON a.idArduino = s.idArduino INNER JOIN `values` v ON s.idSensor = v.idSensor where a.idArduino = " + idArduino + " and v.time >= \"" + lastDay + "\" and v.time < \"" + nextDay + "\" order by v.time;");
+			} else
+				queryString = ("SELECT s.idSensor, v.temperature, v.luminosity, v.time FROM arduinos a INNER JOIN sensors s ON a.idArduino = s.idArduino INNER JOIN `values` v ON s.idSensor = v.idSensor where a.idArduino = " + idArduino + " order by v.time;");
+
 			rs = stmt.executeQuery(queryString);
 			while(rs.next()) {
 				int t = rs.getInt("temperature");
@@ -351,14 +379,12 @@ public class JavaBean {
 			rs.close();
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
-			throw new SQLException(error);
+			throw new SQLException(sqle);
 		} catch (Exception e) {
 			error = "A aparut o exceptie in timp ce se extrageau datele.";
 			throw new Exception(error);
 		}
-//		for(Measurement m : measurements) {
-//			System.out.println(m.time + ", " + m.temperature + ", " + m.light);
-//		}
+		
 		return measurements;
 	}
 

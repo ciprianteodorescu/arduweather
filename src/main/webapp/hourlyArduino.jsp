@@ -138,7 +138,7 @@
 		type: 'line',
 	  	data: {
 	  		datasets: [{
-	  			label: 'Temperatures',
+	  			label: 'Temperature',
 	  			data: temperatures,
 	  			borderColor: 'rgba(255, 0, 0, 0.7)',
 	  		},
@@ -153,16 +153,30 @@
 	    	responsive: true,
 	    	plugins: {
 	      		legend: {
-	        		position: 'top',
+	        		position: 'top'
 	      		},
 	      		title: {
 	        		display: true,
-	        		text: '<%=location%>'
+	        		text: '<%=location%>',
+	        		color: 'black'
 	      		}
+	    	},
+	    	scales: {
+	    		x: {
+	    			ticks: {
+	    				color: 'black'
+	    			}
+	    		},
+	    		y: {
+	    			ticks: {
+	    				color: 'black'
+	    			}
+	    		}
 	    	}
 	  	},
 	};
 	
+	//Chart.defaults.global.defaultFontColor = 'black';
 	// chart render
 	const myChart = new Chart(document.getElementById('myChart'), config);
 	
