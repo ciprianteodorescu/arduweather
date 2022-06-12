@@ -1,6 +1,5 @@
 package db;
 
-import java.io.Console;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -511,14 +510,16 @@ public class JavaBean {
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(queryString);
 			
-			Timestamp time = null;
+			String time = "";
 			rs.next();
-			time = rs.getTimestamp("time");
+			time = rs.getTimestamp("time").toString().substring(0, 19);
 			System.out.println(time);
 			rs.close();
 			
-			//queryString = ("insert into `values` (idSensor, temperature, time) values (" + idSensorTemp + ", " + temp + ", " + time + ");");
-			
+			queryString = ("insert into `values` (idSensor, temperature, time) values (" + idSensorTemp + ", " + temp + ", '" + time + "');");
+			stmt.executeUpdate(queryString);
+			queryString = ("insert into `values` (idSensor, luminosity, time) values (" + idSensorLight + ", " + light + ", '" + time + "');");
+			stmt.executeUpdate(queryString);
 			disconnect();
 		} catch(Exception e) {
 			System.out.println(e);

@@ -6,8 +6,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-unsigned long waitTime;
-unsigned long lcdTime;
+const long SEND_WAIT = 3600000; // 60 min
+const long LCD_WAIT = 1000; // 1 sec
+
+unsigned long waitTime = -SEND_WAIT;
+unsigned long lcdTime = -LCD_WAIT;
 
 OneWire oneWire(10);
 DallasTemperature sensors(&oneWire);
@@ -22,11 +25,22 @@ ESP8266Client client;
 
 // connection details
 char server[] = "192.168.2.112";
-String path_name = "/post_temp.php";
+
+class Measurement {
+  public:
+    int temp;
+    int light;
+};
+
+Measurement measurement;
 
 void setup() {
-  waitTime = millis();
-  lcdTime = millis();
+  measurement.temp = 0;
+  measurement.light = 0;
+  randomSeed(analogRead(0)); // take noise for seed
+  
+//  waitTime = millis();
+//  lcdTime = millis();
   lcd.begin(16, 2);
   Serial.begin(9600);
   
@@ -110,18 +124,21 @@ int sendData(){
   int resp = client.connect(server, 8080);
   Serial.println(resp);
   //client.println("GET " + path_name + "?temp=5");
-  client.println("GET /arduweather/post_temp.jsp?idArduino=1&idSensorTemp=7&idSensorLight=8&temp=5&light=70 HTTP/1.0");
+  char req[200];
+  sprintf(req, "GET /arduweather/postTemp.jsp?idArduino=1&idSensorTemp=7&idSensorLight=8&temp=%d&light=%d HTTP/1.1", measurement.temp, measurement.light);
+  Serial.println(req);
+  client.println(req);
   client.println("Host: " + String(server));
   client.println("Connection: close");
   client.println();
 
 //  while(client.connected()) {
-//      if(client.available()){
-//        // read an incoming byte from the server and print it to serial monitor:
-//        char c = client.read();
-//        Serial.print(c);
-//      }
+//    if(client.available()){
+//      // read an incoming byte from the server and print it to serial monitor:
+//      char c = client.read();
+//      Serial.print(c);
 //    }
+//  }
   
   client.stop();
   Serial.println("disconnected");
@@ -129,21 +146,50 @@ int sendData(){
 }
 
 void lcdPrintTemp(){
-  sensors.requestTemperatures();
+  //sensors.requestTemperatures();
+  lcd.clear();
   char x[30];
-  sprintf(x, "at=%d out=%d", printT(therms[0]), printT(therms[1]));
-  //lcd.clear();
+  sprintf(x, "temp=%d", measurement.temp);
   lcd.setCursor(0, 0);  
   lcd.print(x);
-  sprintf(x, "in=%d", printT(therms[2]));
+  sprintf(x, "light=%d%", measurement.light);
   lcd.setCursor(0, 1);
   lcd.print(x);
+}
+
+void readRandomData() {
+  int temp = random(20, 31);
+  int light = random(80, 96);
+  int r1 = random(6);
+  int r2 = random(2);
+
+  Serial.println();
+  Serial.print(temp);
+  Serial.print(" ");
+  Serial.print(light);
+  Serial.print(" ");
+  Serial.print(r1);
+  Serial.print(" ");
+  Serial.print(r2);
+
+  measurement.temp = r2 == 0 ? temp + r1 : temp - r1;
+  measurement.light = r2 == 0 ? light + r1 : light - r1;
+
+  Serial.print(" ");
+  Serial.print(measurement.temp);
+  Serial.print(" ");
+  Serial.println(measurement.light);
 }
 
 void(* resetFunc) (void) = 0;
 
 void loop() {
-  if(millis() - waitTime > 1000) {//300000){
+  if(millis() - lcdTime >= LCD_WAIT){
+    readRandomData();
+    lcdPrintTemp();
+    lcdTime = millis();
+  }
+  if(millis() - waitTime >= SEND_WAIT) {
     /*for(int i = 0; i < 3; i++)
       if(lastTemps[i] != printT(therms[i])){
         lcd.clear();
@@ -153,10 +199,6 @@ void loop() {
       }*/
       while(sendData() < 0);
       waitTime = millis();
-  }
-  if(millis() - lcdTime > 1000){
-    lcdPrintTemp();
-    lcdTime = millis();
   }
   if(millis() > 86400000)
     resetFunc();

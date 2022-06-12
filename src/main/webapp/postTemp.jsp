@@ -12,7 +12,7 @@
 <%
 	int idArduino = Integer.parseInt(request.getParameter("idArduino"));
 	int idSensorTemp = Integer.parseInt(request.getParameter("idSensorTemp"));
-	int idSensorLight = Integer.parseInt(request.getParameter("idSensorTemp"));
+	int idSensorLight = Integer.parseInt(request.getParameter("idSensorLight"));
 	int temp = Integer.parseInt(request.getParameter("temp"));
 	int light = Integer.parseInt(request.getParameter("light"));
 	System.out.println(idArduino + ", " + idSensorTemp + ", " + idSensorLight + ", " + temp + ", " + light);

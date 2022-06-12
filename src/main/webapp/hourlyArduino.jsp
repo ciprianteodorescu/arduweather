@@ -122,13 +122,20 @@
     var temperatures = [];
     var lights = [];
     var times = [];
+    var date = '';
     <%
+    if(measurements.size() > 0) {
+    	%>
+    	date = '<%=measurements.get(0).time.substring(0, 10)%>';
+    	<%
+    }
+    	
     for(Measurement m : measurements) {
     	%>
     	temperatures.push(<%=m.temperature%>);
     	lights.push(<%=m.light%>);
 <%--     	times.push(new Date("<%=m.time%>")); --%>
-		times.push("<%=m.time%>");
+		times.push("<%=m.time.substring(11, 19)%>");
     	<%
     }
     %>
@@ -159,6 +166,11 @@
 	        		display: true,
 	        		text: '<%=location%>',
 	        		color: 'black'
+	      		},
+	      		subtitle: {
+	      			display: true,
+	      			text: date,
+	      			color: 'black'
 	      		}
 	    	},
 	    	scales: {
