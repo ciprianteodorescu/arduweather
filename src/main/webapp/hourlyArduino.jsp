@@ -122,13 +122,20 @@
     var temperatures = [];
     var lights = [];
     var times = [];
+    var date = '';
     <%
+    if(measurements.size() > 0) {
+    	%>
+    	date = '<%=measurements.get(0).time.substring(0, 10)%>';
+    	<%
+    }
+    	
     for(Measurement m : measurements) {
     	%>
     	temperatures.push(<%=m.temperature%>);
     	lights.push(<%=m.light%>);
 <%--     	times.push(new Date("<%=m.time%>")); --%>
-		times.push("<%=m.time%>");
+		times.push("<%=m.time.substring(11, 19)%>");
     	<%
     }
     %>
@@ -138,7 +145,7 @@
 		type: 'line',
 	  	data: {
 	  		datasets: [{
-	  			label: 'Temperatures',
+	  			label: 'Temperature',
 	  			data: temperatures,
 	  			borderColor: 'rgba(255, 0, 0, 0.7)',
 	  		},
@@ -153,16 +160,35 @@
 	    	responsive: true,
 	    	plugins: {
 	      		legend: {
-	        		position: 'top',
+	        		position: 'top'
 	      		},
 	      		title: {
 	        		display: true,
-	        		text: '<%=location%>'
+	        		text: '<%=location%>',
+	        		color: 'black'
+	      		},
+	      		subtitle: {
+	      			display: true,
+	      			text: date,
+	      			color: 'black'
 	      		}
+	    	},
+	    	scales: {
+	    		x: {
+	    			ticks: {
+	    				color: 'black'
+	    			}
+	    		},
+	    		y: {
+	    			ticks: {
+	    				color: 'black'
+	    			}
+	    		}
 	    	}
 	  	},
 	};
 	
+	//Chart.defaults.global.defaultFontColor = 'black';
 	// chart render
 	const myChart = new Chart(document.getElementById('myChart'), config);
 	

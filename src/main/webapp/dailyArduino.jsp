@@ -81,36 +81,51 @@
           </ul>
     </header>
 
-	<span><%=location%></span>
+	<div class="location">
+		<i class="bx bx-map"></i>
+		<span><%=location%></span>
+	</div>
 	<div class="daily-wrapper">
 	<%
-	System.out.println(idArduino);
-	List<Measurement> measurements = jb.listAverageDaysValues(idArduino);
+	//System.out.println(idArduino);
+	List<Measurement> m = jb.listAverageThreeDaysValues(idArduino);
+	int mSize = m.size();
+	int start = mSize - 3 >=0 ? mSize - 3 : 0;
 	//List<Integer> tempList = new ArrayList<>();
 	//List<Integer> lightList = new ArrayList<>();
-	
-	for(Measurement m : measurements) {
-	%>
-		<div class="wrapper active">      
-	      <section class="weather-part">	       
-	        <div class="temp">
-	          <span class="numb"><%=m.temperature%></span>
-	          <sup>°</sup>C
-	        </div>
-	        <div class="bottom-details">
-	
-	          <div class="row clouds">
-	            <i class='bx bx-sun'></i>
-	            <div class="details">
-	              <span><%=m.light%></span>%
-	              <p>Light</p>
-	            </div>
-	          </div>
-	
-	        </div>
-	      </section>
-	    </div>
-	<%
+	if(mSize > 0) {
+		for(int i = start; i < mSize; i++) {
+		%>
+			<div class="wrapper active">      
+		      <section class="weather-part">	       
+		        <div class="temp">
+		          <span class="numb"><%=m.get(i).temperature%></span>
+		          <sup>°</sup>C
+		        </div>
+		        <div class="location">
+					<span><%=m.get(i).time%></span>
+				</div>
+		        <div class="bottom-details">
+		
+		          <div class="row clouds">
+		            <i class='bx bx-sun'></i>
+		            <div class="details">
+		              <span><%=m.get(i).light%>%</span>
+		              <p>Light</p>
+		            </div>
+		          </div>
+		
+		        </div>
+		      </section>
+		    </div>
+		<%
+		}
+	} else {
+		%>
+		<div class="location">
+			<span>No measurements for this location</span>
+		</div>
+		<%
 	}
 	%>
 	    
