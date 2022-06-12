@@ -110,18 +110,18 @@ int sendData(){
   int resp = client.connect(server, 8080);
   Serial.println(resp);
   //client.println("GET " + path_name + "?temp=5");
-  client.println("GET /arduweather/post_temp.php?temp=5 HTTP/1.0");
+  client.println("GET /arduweather/post_temp.jsp?idArduino=1&idSensorTemp=7&idSensorLight=8&temp=5&light=70 HTTP/1.0");
   client.println("Host: " + String(server));
   client.println("Connection: close");
   client.println();
 
-  while(client.connected()) {
-      if(client.available()){
-        // read an incoming byte from the server and print it to serial monitor:
-        char c = client.read();
-        Serial.print(c);
-      }
-    }
+//  while(client.connected()) {
+//      if(client.available()){
+//        // read an incoming byte from the server and print it to serial monitor:
+//        char c = client.read();
+//        Serial.print(c);
+//      }
+//    }
   
   client.stop();
   Serial.println("disconnected");

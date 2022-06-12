@@ -262,14 +262,12 @@ public class JavaBean {
 				Timestamp time = Timestamp.valueOf(allMeasurements.get(0).time);
 				for(Measurement m : allMeasurements) {
 					Timestamp mTime = Timestamp.valueOf(m.time);
-					System.out.println("date: " + mTime.getDate());
 					if(Integer.valueOf(time.getDate()) == Integer.valueOf(mTime.getDate())) {
 						i++;
 						avgTemp += m.temperature;
 						avgLight += m.light;
 					} else {
 						if(i > 0) {
-							System.out.println("i: " + i);
 							avgTemp = avgTemp / i;
 							avgLight = avgLight / i;
 						}
@@ -286,7 +284,6 @@ public class JavaBean {
 					}
 				}
 				if(i > 0) {
-					System.out.println("i: " + i);
 					avgTemp = avgTemp / i;
 					avgLight = avgLight / i;
 				}
@@ -294,7 +291,6 @@ public class JavaBean {
 				finalMeasurements.add(
 						new Measurement(avgTemp, avgLight, date)
 						);
-				System.out.println();
 			}
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
@@ -507,6 +503,27 @@ public class JavaBean {
 		}
 		return rs;
 	} // end of returnValueById()
+	
+	public void postMeasurementToDB(int idArduino, int idSensorTemp, int idSensorLight, int temp, int light) {
+		try {
+			connect();
+			String queryString = ("select current_timestamp() as time;");
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(queryString);
+			
+			Timestamp time = null;
+			rs.next();
+			time = rs.getTimestamp("time");
+			System.out.println(time);
+			rs.close();
+			
+			//queryString = ("insert into `values` (idSensor, temperature, time) values (" + idSensorTemp + ", " + temp + ", " + time + ");");
+			
+			disconnect();
+		} catch(Exception e) {
+			System.out.println(e);
+		}
+	}
 	
 	public class Measurement{
 		public int temperature;
