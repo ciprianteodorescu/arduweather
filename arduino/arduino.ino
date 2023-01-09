@@ -6,7 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-const long SEND_WAIT = 3600000; // 60 min
+//const long SEND_WAIT = 3600000; // 60 min
+const long SEND_WAIT = 10000; // 10 sec
 const long LCD_WAIT = 1000; // 1 sec
 
 unsigned long waitTime = -SEND_WAIT;
@@ -19,12 +20,12 @@ int lastTemps[3];
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
-const char mySSID[] = "net4you";
-const char myPSK[] = "123net0ten321";
+const char mySSID[] = "STK-LX1";
+const char myPSK[] = "palindrim";
 ESP8266Client client;
 
 // connection details
-char server[] = "192.168.2.112";
+char server[] = "192.168.71.203";
 
 class Measurement {
   public:

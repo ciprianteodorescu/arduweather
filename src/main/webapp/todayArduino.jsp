@@ -1,3 +1,4 @@
+<%@page import="db.JavaBean.Measurement"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%@ page language="java" import="java.lang.*,java.math.*,db.*,java.sql.*, java.io.*, java.util.*"%>
 <!DOCTYPE html>
@@ -15,8 +16,7 @@
   <body>
   <%
   jb.connect();
-  ResultSet rs;
-  String arduino, city;
+  ArrayList<Arduino> arduinos;
   int idArduino = Integer.parseInt(request.getParameter("idArduino"));
   String location = jb.getArduinoLocation(idArduino);
   int dropdownIdArduino;
@@ -30,16 +30,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="todayDrop">Today</a></li>
             	<div id="todayDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="todayArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="todayArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -47,16 +43,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="hourlyDrop">Hourly</a></li>
             	<div id="hourlyDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="hourlyArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="hourlyArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -64,16 +56,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="dailyDrop">Daily</a></li>
             	<div id="dailyDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="dailyArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="dailyArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -81,28 +69,24 @@
     </header>
 
 	<%
-  rs = jb.listLastValue(idArduino);
+  Measurement m = jb.listLastValue(idArduino);
   int temperature = 0, light = 0;
   String icon = "";
-  while(rs.next()) {
-    int aux1 = rs.getInt("temperature");
-    int aux2 = rs.getInt("luminosity");
-    temperature = aux1 != 0 ? aux1 : temperature;
-    light = aux2 != 0 ? aux2 : light;
-    
-    Timestamp time = rs.getTimestamp("time");
-    if(time.getHours() >= 9 && time.getHours() <= 19) {
-        if(light <= 20)
-          icon = "Weather Icons\\clear.png";
-        if(light > 20 && light <= 70)
-          icon = "Weather Icons\\sun cloudy.png";
-        if(light > 70)
-          icon = "Weather Icons\\cloud.png";
-    } else 
-      icon = "Weather Icons\\moon.png";
+  
+  temperature = m != null ? m.temperature : temperature;
+  light = m!= null ? m.light : light;
+  
+  if (m != null) {
+	  if (m.time.getHours() >= 9 && m.time.getHours() <= 19) {
+	      if (light <= 20)
+	        icon = "Weather Icons\\clear.png";
+	      if (light > 20 && light <= 70)
+	        icon = "Weather Icons\\sun cloudy.png";
+	      if (light > 70)
+	        icon = "Weather Icons\\cloud.png";
+	  } else 
+	    icon = "Weather Icons\\moon.png";
   }
-  System.out.println("icon: " + icon);
-  rs.close();
   %>
     <div class="wrapper active">      
       <section class="weather-part">
@@ -136,7 +120,17 @@
           <div class="row clouds">
             <i class='bx bx-sun'></i>
             <div class="details">
+            <%
+	     	if(icon != "") {
+	     	%>
               <span><%=light%>%</span>
+              <%
+        	} else {
+          	%>
+          	<span>_</span>
+			<%
+			}
+            %>
               <p>Light</p>
             </div>
           </div>
@@ -144,7 +138,6 @@
         </div>
       </section>
     </div>
-    
 <!--     <script src="script.js"></script> -->
     <script>
     function showArduinos(id) {

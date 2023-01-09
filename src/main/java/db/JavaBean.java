@@ -40,6 +40,10 @@ public class JavaBean {
 			throw new SQLException(error);
 		}
 	} // disconnect()
+	
+	public void addArduino(Arduino arduino) throws SQLException, Exception {
+		addArduino(arduino.name, arduino.city, arduino.country);
+	}
 
 	public void addArduino(String name, String city, String country)
 			throws SQLException, Exception {
@@ -60,6 +64,10 @@ public class JavaBean {
 		}
 	} // end of addArduino()
 
+	public void addSensor(Sensor sensor) throws SQLException, Exception {
+		addSensor(sensor.idArduino, sensor.type);
+	}
+	
 	public void addSensor(int idArduino, String type)
 			throws SQLException, Exception {
 		if (con != null) {
@@ -79,13 +87,25 @@ public class JavaBean {
 		}
 	} // end of addSensor()
 	
-	public ResultSet listArduinos() throws Exception {
+	public ArrayList<Arduino> listArduinos() throws Exception {
 		ResultSet rs = null;
 		try {
 			String queryString = ("select * from `arduinos`;");
 			Statement stmt = con.createStatement();
 			rs = stmt.executeQuery(queryString);
 			
+			ArrayList<Arduino> arduinos = new ArrayList<Arduino>();
+			while(rs.next()) {
+				int idArduino = rs.getInt("idArduino");
+				String name = rs.getString("name");
+				String city = rs.getString("city");
+				String country = rs.getString("country");
+				
+				arduinos.add(new Arduino(idArduino, name, city, country));
+			}
+    		rs.close();
+			
+    		return arduinos;
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
 			throw new SQLException(error);
@@ -93,7 +113,6 @@ public class JavaBean {
 			error = "A aparut o exceptie in timp ce se extrageau datele.";
 			throw new Exception(error);
 		}
-		return rs;
 	} // listArduinos()
 
 	public ResultSet listValues() throws SQLException, Exception {
@@ -112,7 +131,7 @@ public class JavaBean {
 		return rs;
 	} // listValues()
 	
-	public ResultSet listLastValue(int idArduino) throws Exception {
+	public Measurement listLastValue(int idArduino) throws Exception {
 		ResultSet rs = null;
 		try {
 			String queryString = ("SELECT v.temperature, v.luminosity, v.time FROM sensors s INNER JOIN `values` v ON s.idSensor = v.idSensor WHERE s.idArduino = " + idArduino + " ORDER BY v.time DESC LIMIT 2;");
@@ -120,14 +139,26 @@ public class JavaBean {
 			// tempereature and light
 			Statement stmt = con.createStatement();
 			rs = stmt.executeQuery(queryString);
+			
+			Measurement measurement = new Measurement();
+			while (rs.next()) {
+				measurement.temperature = rs.getInt("temperature");
+				measurement.light = rs.getInt("luminosity");
+				measurement.time = rs.getTimestamp("time");
+			}
+			rs.close();
+			if (measurement.time != null)
+				return measurement;
+			else 
+				return null;
 		} catch (SQLException sqle) {
 			error = "SQLException: Interogarea nu a fost posibila.";
-			throw new SQLException(error);
+			return null;
+			//throw new SQLException(error);
 		} catch (Exception e) {
 			error = "A aparut o exceptie in timp ce se extrageau datele.";
 			throw new Exception(error);
 		}
-		return rs;
 	} // listLastValue()
 	
 	public List<Measurement> listAverageThreeDaysValues(int idArduino) throws Exception {
@@ -153,7 +184,7 @@ public class JavaBean {
 				//System.out.println("temp: " + temperature);
 				if(i == 2) {
 					allMeasurements.add(
-							new Measurement(temperature, light, timestamp.toString())
+							new Measurement(temperature, light, timestamp)
 							);
 					i = 0;
 					temperature = 0;
@@ -166,9 +197,9 @@ public class JavaBean {
 			int avgLight = 0;
 			i = 0;
 			if(allMeasurements.size() > 0) {
-				Timestamp time = Timestamp.valueOf(allMeasurements.get(0).time);
+				Timestamp time = allMeasurements.get(0).time;
 				for(Measurement m : allMeasurements) {
-					Timestamp mTime = Timestamp.valueOf(m.time);
+					Timestamp mTime = m.time;
 					if(Integer.valueOf(time.getDate()) == Integer.valueOf(mTime.getDate())) {
 						i++;
 						avgTemp += m.temperature;
@@ -179,9 +210,9 @@ public class JavaBean {
 							avgLight = avgLight / i;
 						}
 						i = 0;
-						String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
+						//String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
 						finalMeasurements.add(
-								new Measurement(avgTemp, avgLight, date)
+								new Measurement(avgTemp, avgLight, time)
 								);
 						//System.out.print(finalMeasurements.get(finalMeasurements.size() - 1).temperature + ", ");
 						time = mTime;
@@ -194,9 +225,9 @@ public class JavaBean {
 					avgTemp = avgTemp / i;
 					avgLight = avgLight / i;
 				}
-				String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
+				//String date = time.getDate() + "." + (time.getMonth() + 1) + "." + (time.getYear() + 1900);
 				finalMeasurements.add(
-						new Measurement(avgTemp, avgLight, date)
+						new Measurement(avgTemp, avgLight, time)
 						);
 			}
 		} catch (SQLException sqle) {
@@ -207,7 +238,7 @@ public class JavaBean {
 			error = "A aparut o exceptie in timp ce se extrageau datele.";
 			throw new Exception(error);
 		}
-
+		
 		return finalMeasurements;
 	} // listAverageThreeDaysValues()
 	
@@ -267,15 +298,14 @@ public class JavaBean {
 				int l = rs.getInt("luminosity");
 				Timestamp time = rs.getTimestamp("time");
 				int mLast = measurements.size() - 1;
-				if(mLast >= 0 && measurements.get(mLast).time.equals(time.toString())) {
+				if(mLast >= 0 && measurements.get(mLast).time.toString().equals(time.toString())) {
 					measurements.get(mLast).temperature = t != 0 ? t : measurements.get(mLast).temperature;
 					measurements.get(mLast).light = l != 0 ? l : measurements.get(mLast).light;
 
 				} else {
-					String timeString = time.toString();
 					//timeString = timeString.substring(0, timeString.length() - 2);
 					measurements.add(
-						new Measurement(t, l, timeString)
+						new Measurement(t, l, time)
 					);
 				}
 			}
@@ -317,12 +347,12 @@ public class JavaBean {
 	public class Measurement{
 		public int temperature;
 		public int light;
-		public String time;
+		public Timestamp time;
 		
 		public Measurement() {
 		}
 		
-		public Measurement(int temp, int light, String time) {
+		public Measurement(int temp, int light, Timestamp time) {
 			this.temperature = temp;
 			this.light = light;
 			this.time = time;
