@@ -17,8 +17,7 @@
   <body>
   <%
   jb.connect();
-  ResultSet rs;
-  String arduino, city;
+  ArrayList<Arduino> arduinos;
   int idArduino = Integer.parseInt(request.getParameter("idArduino"));
   String location = jb.getArduinoLocation(idArduino);
   int dropdownIdArduino;
@@ -32,16 +31,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="todayDrop">Today</a></li>
             	<div id="todayDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="todayArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="todayArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -49,16 +44,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="hourlyDrop">Hourly</a></li>
             	<div id="hourlyDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="hourlyArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="hourlyArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -66,16 +57,12 @@
 	            <li><a onclick="showArduinos(this.id);" class="dropbtn" id="dailyDrop">Daily</a></li>
             	<div id="dailyDropContent" class="dropdown-content">
             		<%
-            		rs = jb.listArduinos();
-            		while(rs.next()) {
-            			arduino = rs.getString("name");
-            			city = rs.getString("city");
-            			dropdownIdArduino = rs.getInt("idArduino");
+            		arduinos = jb.listArduinos();
+            		for(Arduino arduino : arduinos) {
             		%>
-            			<a href="dailyArduino.jsp?idArduino=<%=dropdownIdArduino%>"><%=arduino%> (<%=city%>)</a>
+            			<a href="dailyArduino.jsp?idArduino=<%=arduino.id%>"><%=arduino.name%> (<%=arduino.city%>)</a>
             		<%
             		}
-            		rs.close();
             		%>
             	</div>
             </div>
@@ -126,7 +113,7 @@
     <%
     if(measurements.size() > 0) {
     	%>
-    	date = '<%=measurements.get(0).time.substring(0, 10)%>';
+    	date = "<%=measurements.get(0).time.getDate()%>." + "<%=measurements.get(0).time.getMonth()%>." + "<%=measurements.get(0).time.getYear() + 1900%>";
     	<%
     }
     	
@@ -134,8 +121,7 @@
     	%>
     	temperatures.push(<%=m.temperature%>);
     	lights.push(<%=m.light%>);
-<%--     	times.push(new Date("<%=m.time%>")); --%>
-		times.push("<%=m.time.substring(11, 19)%>");
+		times.push("<%=m.time.getHours()%>:" + "<%=m.time.getMinutes()%>:" + "<%=m.time.getSeconds()%>");
     	<%
     }
     %>
